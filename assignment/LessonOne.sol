@@ -130,7 +130,7 @@ contract Payroll {
     function calculateRunway()
     public view
     returns (uint) {
-        return address(this).balance / salary;
+        return address(this).balance.div(salary);
     }
 
     function hasEnoughFund()

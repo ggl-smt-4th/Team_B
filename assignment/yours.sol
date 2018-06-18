@@ -1,50 +1,49 @@
-pragma solidity ^0.4.14;
+pragma solidity ^0.4.24;
 
 contract Payroll {
-    uint constant payDuration = 30 days;
-
-    address owner;
-    uint salary;
-    address employee;
-    uint lastPayday;
-
-    function Payroll() {
-        owner = msg.sender;
-    }
-
-    function updateEmployee(address e, uint s) {
-        require(msg.sender == owner);
-
-        address lastEmployee = employee;
-        employee = e;
-        salary = s * 1 ether;
-        lastPayday = now;
-
-        if (lastEmployee != 0x0) {
-            uint payment = salary * (now - lastPayday) / payDuration;
-            lastEmployee.transfer(payment);
-        }
-    }
-
-    function addFund()  payable returns (uint) {
+    uint salary = 1 ether;
+    address worker = 0xca35b7d915458ef540ade6068dfe2f44e8fa733c;
+    uint constant payDuration = 10 seconds;
+    uint lastPayday = now;
+    
+    function addFund() payable returns (uint) {
         return this.balance;
     }
-
-    function calculateRunway() view returns (uint) {
+    
+    function setSalary(uint x) {
+        salary = x;
+    }
+    
+    function getSalary() returns (uint) {
+        return salary;
+    }
+    
+    function setWorker(address x) {
+        worker = x;
+    }
+    
+    function getWorker() returns (address) {
+        return worker;
+    }
+    
+    function calRunway() returns (uint) {
         return this.balance / salary;
     }
-
-    function hasEnoughFund() view returns (bool) {
-        return calculateRunway() > 0;
+    
+    function hasEnoughFund() returns (bool) {
+    
+        return calRunway() > 0;
     }
-
+    
     function getPaid() {
-        require(msg.sender == employee);
-
-        uint nextPayday = lastPayday + payDuration;
-        require(nextPayday < now);
-
-        lastPayday = nextPayday;
-        employee.transfer(salary);
+        if(msg.sender != worker) {
+            revert();
+        }
+        uint currPayday = lastPayday + payDuration;
+        if(currPayday > now) {
+            revert();
+        }
+        lastPayday = currPayday;
+        worker.transfer(salary);
     }
 }

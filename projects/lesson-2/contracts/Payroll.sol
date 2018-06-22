@@ -79,7 +79,10 @@ contract Payroll {
     function getPaid() public {
         address employee = msg.sender;
         int i = _findEmployee(employee);
-        _partialPaid(employees[uint(i)]);
+        uint salary = employees[uint(i)].salary;
+        uint payment = salary * ( now - employees[uint(i)].lastPayDay) / payDuration;
+        employee.transfer(payment);
+
         employees[uint(i)].lastPayDay = now;
     }
 }

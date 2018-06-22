@@ -79,11 +79,12 @@ contract Payroll {
     function getPaid() public {
         address employee = msg.sender;
         int i = _findEmployee(employee);
-        uint salary = employees[uint(i)].salary;
-        uint payment = salary * ( now - employees[uint(i)].lastPayDay) / payDuration;
-        employee.transfer(payment);
-
-        employees[uint(i)].lastPayDay = now;
+        assert (i != -1);
+        
+        uint nextPayday = employees[uint(i)].lastPayDay + payDuration;
+        assert(nextPayday < now);
+        employees[uint(i)].lastPayDay = nextPayday;
+        employee.transfer(employees[uint(i)].salary);
     }
 }
 

@@ -1,7 +1,7 @@
 pragma solidity ^0.4.14;
 
 contract Payroll {
-    uint constant payDuration = 30 days;
+    uint constant payDuration = 10 seconds;
 
     address owner;
     uint salary;
@@ -11,22 +11,39 @@ contract Payroll {
     function Payroll() {
         owner = msg.sender;
     }
+    
+    /// @dev settle the payment according to the contract before update
+    function settlePayment() internal {
+        if (employee != 0x0) {
+            uint payment = salary * (now - lastPayday) / payDuration;
+            employee.transfer(payment);
+        }
+        lastPayday = now;
+    }
+
+    function updateEmployeeSalary(uint s) public {
+         require(msg.sender == owner);
+
+         settlePayment();
+         salary = s * 1 ether;
+    }
+
+    function updateEmployeeAddress(address e) public {
+        require(msg.sender == owner);
+
+        settlePayment();
+        employee = e;
+    }
 
     function updateEmployee(address e, uint s) {
         require(msg.sender == owner);
 
-        address lastEmployee = employee;
+        settlePayment();
         employee = e;
         salary = s * 1 ether;
-        lastPayday = now;
-
-        if (lastEmployee != 0x0) {
-            uint payment = salary * (now - lastPayday) / payDuration;
-            lastEmployee.transfer(payment);
-        }
     }
 
-    function addFund()  payable returns (uint) {
+    function addFund() payable returns (uint) {
         return this.balance;
     }
 

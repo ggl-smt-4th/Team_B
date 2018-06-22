@@ -45,14 +45,10 @@ contract Payroll {
 
 
     function getPaid() {
-        if (msg.sender != employee) {
-            revert();
-        }
+        require(msg.sender == employee);
 
         uint nextPayDay = lastPayday + payDuration;
-        if (nextPayDay > now) {
-            revert();
-        }
+        require(nextPayDay <= now);
 
         lastPayday = nextPayDay;
         employee.transfer(salary);

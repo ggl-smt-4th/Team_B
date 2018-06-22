@@ -1,4 +1,4 @@
-pragma solidity ^0.4.14;
+pragma solidity ^0.4.17;
 
 contract Payroll {
 
@@ -66,10 +66,10 @@ contract Payroll {
     function addFund() payable public returns (uint) {
         return address(this).balance;
     }
-
-    function calculateRunway() public returns (uint) {
+    
+    function calculateRunway() public view returns (uint) {
         require (msg.sender == owner);
-        return address(this).balance / total;
+        return this.balance / total;
     }
 
     function hasEnoughFund() public returns (bool) {

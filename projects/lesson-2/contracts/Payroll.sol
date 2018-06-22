@@ -12,7 +12,7 @@ contract Payroll {
 
     address owner;
     Employee[] employees;
-	uint totalSalary;
+    uint totalSalary;
 
     function Payroll() payable public {
         owner = msg.sender;

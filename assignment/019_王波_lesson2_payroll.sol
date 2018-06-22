@@ -11,6 +11,7 @@ contract Payroll {
     }
     
     Employee [] employees;
+    uint totalSalary;
     
     function Payroll() {
         owner = msg.sender;
@@ -38,6 +39,7 @@ contract Payroll {
         _partialPay(emp);
         employees[indx].salary = sal * 1 ether;
         employees[indx].lastPayday = now;
+        totalSalary = totalSalary - emp.salary + sal * 1 ether;
     }
     
     function addEmployee(address addr, uint sal) {
@@ -48,6 +50,7 @@ contract Payroll {
         //emp.salary = sal * 1 ether;
         //emp.lastPayday = now;
         employees.push(Employee(addr, sal * 1 ether, now));
+        totalSalary = totalSalary + sal * 1 ether;
     }
     
     function removeEmployee(address addr) {
@@ -58,7 +61,8 @@ contract Payroll {
         _partialPay(emp);
         delete(employees[indx]);
 		employees[indx] = employees[employees.length-1];
-		employees.length -= 1;       
+		employees.length -= 1;
+		totalSalary = totalSalary - emp.salary;
     }
     
     function addFund() payable returns (uint) {
@@ -66,10 +70,10 @@ contract Payroll {
     }
     
     function calRunway() returns (uint) {
-        uint totalSalary = 0;
-        for(uint i=0; i<employees.length; i++) {
-            totalSalary += employees[i].salary;
-        }
+        //uint totalSalary = 0;
+        //for(uint i=0; i<employees.length; i++) {
+        //    totalSalary += employees[i].salary;
+        //}
         return this.balance / totalSalary;
     }
     

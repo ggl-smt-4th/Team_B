@@ -1,0 +1,59 @@
+employee 1 
+0xca35b7d915458ef540ade6068dfe2f44e8fa733c，1
+transaction cost 22971 gas
+execution cost 1699 gas
+output100
+
+employee 2 
+0x14723a09acff6d2a60dcdf7aa4aff308fddc160c，1
+transaction cost 23759 gas
+execution cost 2487 gas
+output 50
+
+employee 3
+0x4b0897b0513fdc7c541b6d9d7e929c4e5364d2db，1
+transaction cost 24547 gas
+execution cost 3275 gas
+output 33
+
+employee 4
+0x583031d1113ad414f02576bd6afabfb302140225，1
+transaction cost 25335 gas
+execution cost 4063 gas
+output 25
+
+employee 5
+0xdd870fa1b7c4700f2bd7f44238821c26f7392148，1
+transaction cost 26123 gas
+execution cost 4851 gas
+output 20
+
+employee 6
+0xe3b8e7463c627f5e74c1e23e8c55e9fffec65865，1
+transaction cost 26911 gas
+execution cost 5639 gas
+output 16
+
+employee 7
+0x345bde942e751d3370262e897c15858b0e66e26e，1
+transaction cost 27699 gas
+execution cost 6427 gas
+output 14
+
+employee 8
+0xc7f46c0669c5af3baedb52261beea876ad2aba22，1
+transaction cost 28487 gas
+execution cost 7215 gas
+output 12
+
+employee 9
+0x55533e5c892a035bf6dda8a8016ba41bf0f0f071，1
+transaction cost 29275 gas
+execution cost 8003 gas
+output 11
+
+employee 10
+0x0207c82eb2a0c031458e44e53c74883b31ecaa9e，1
+transaction cost 30063 gas
+execution cost 8791 gas
+output 10

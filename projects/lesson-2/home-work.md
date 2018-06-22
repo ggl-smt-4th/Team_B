@@ -1,0 +1,51 @@
+# Lesson Two Homework
+
+## Estimate Gas Change
+
+### Before
+
+| NumberOfEmployee | EstimateGas |
+| ---------------- | ----------- |
+| 1                | 23162       |
+| 2                | 24046       |
+| 3                | 24930       |
+| 4                | 25814       |
+| 5                | 26698       |
+| 6                | 27582       |
+| 7                | 28466       |
+| 8                | 29350       |
+| 9                | 30234       |
+| 10               | 31118       |
+
+### Optimize
+
+#### Idea
+
+calculateRunway 函数每次调用都需要遍历一遍数组来统计薪水，随着雇员数量的增加，自然每次调用需要的 gas 也在增加。一个简单的优化思路就是缓存计算结果，新增一个全局状态，一次计算后把结果保存下来，当新增，更新或者删除雇员的时候将缓存重置。或者干脆在上诉三个操作的时候直接更新状态，省去遍历的麻烦。
+
+#### After
+
+完整实现请看**Payroll.sol**内的 OptimizedPayroll 合约
+
+```solidity
+    function calculateRunway()
+    public
+    view
+    returns (uint)
+    {
+        return address(this).balance.div(totalSalaries);
+    }
+```
+
+| NumberOfEmployee | EstimateGas |
+| ---------------- | ----------- |
+| 1                | 22217       |
+| 2                | 22217       |
+| 3                | 22217       |
+| 4                | 22217       |
+| 5                | 22217       |
+| 6                | 22217       |
+| 7                | 22217       |
+| 8                | 22217       |
+| 9                | 22217       |
+| 10               | 22217       |

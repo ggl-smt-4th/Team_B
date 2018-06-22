@@ -3,7 +3,7 @@ pragma solidity ^0.4.14;
 contract Payroll {
 
     struct Employee {
-        // TODO: your code here
+        
     }
 
     uint constant payDuration = 30 days;

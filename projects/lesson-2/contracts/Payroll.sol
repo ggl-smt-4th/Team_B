@@ -8,7 +8,7 @@ contract Payroll {
         uint lastPayDay;
     }
 
-    uint constant payDuration = 10 seconds;
+    uint constant payDuration = 30 days;
     uint total = 0;
     address owner;
     Employee[] employees;
@@ -60,7 +60,7 @@ contract Payroll {
         total -= employees[uint(i)].salary;
         employees[uint(i)].salary = salary * 1 ether;
         employees[uint(i)].lastPayDay = now;
-        total += salary;
+        total += salary * 1 ether;
     }
 
     function addFund() payable public returns (uint) {

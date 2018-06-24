@@ -37,7 +37,7 @@ contract Payroll {
     event OnPay(address employeeAddr, uint amount, uint indexed date);
     event OnWithdraw(uint amount, uint indexed date);
 
-    constructor()
+    function Payroll()
     public
     payable {
         owner = msg.sender;

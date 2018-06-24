@@ -32,7 +32,7 @@ contract('Payroll', function (accounts) {
 
   it("Test getPaid() before duration", function () {
     var payroll;
-    return Payroll.deployed.call(owner, {from: owner, value: web3.toWei(fund, 'ether')}).then(instance => {
+    return Payroll.new().then(instance => {
       payroll = instance;
       return payroll.updateEmployeeAddress(employee, {from: owner});
     }).then(() => {
@@ -51,7 +51,7 @@ contract('Payroll', function (accounts) {
 
   it("Test getPaid() by a non-employee", function () {
     var payroll;
-    return Payroll.deployed.call(owner, {from: owner, value: web3.toWei(fund, 'ether')}).then(instance => {
+    return Payroll.new().then(instance => {
       payroll = instance;
       return payroll.updateEmployeeAddress(employee, {from: owner});
     }).then(() => {

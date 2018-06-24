@@ -10,8 +10,7 @@ contract Payroll {
 
     address public owner;
     address public employee;
-    bytes32 public employeeName;
-    uint public salary;
+    uint public salary = 1 ether;
     uint public lastPayday;
 
     modifier onlyOwner() {
@@ -30,27 +29,23 @@ contract Payroll {
     event OnPay(address employee, uint amount, uint indexed date);
     event OnWithdraw(uint amount, uint indexed date);
 
-    constructor(address _employee, bytes32 _employeeName, uint _salary)
+    constructor()
     public {
-        require(_employee != 0x0 && _employeeName != "" && _salary > 0);
-
         owner = msg.sender;
-        employee = _employee;
-        employeeName = _employeeName;
-        salary = _salary.mul(1 finney);
-        // solhint-disable-next-line not-rely-on-time
-        lastPayday = now;
     }
 
     function ()
-    public payable {
+    public
+    payable
+    {
         revert();
     }
 
     function addFund()
     external payable
     onlyOwner
-    returns (uint) {
+    returns (uint)
+    {
         // solhint-disable-next-line not-rely-on-time
         emit OnAddFund(msg.value, now);
         return address(this).balance;
@@ -71,32 +66,64 @@ contract Payroll {
         emit OnPay(employee, salary, now);
     }
 
-    function updateEmployeeAndSalary(
-        address _employee,
-        bytes32 _employeeName,
-        uint _salary
+    function updateEmployeeAddress(
+        address _newAddress
     )
     external
-    onlyOwner {
+    onlyOwner
+    {
+        require(_newAddress != 0x0);
+
         address lastEmployee = employee;
+        employee = _newAddress;
         /* solhint-disable not-rely-on-time */
-        uint payment = salary.mul(now.sub(lastPayday).div(PAY_DURATION));
-        lastPayday = now;
+        if (lastEmployee == 0x0) {
+            lastPayday = now;
+        } else {
+            uint payment = salary.mul(now.sub(lastPayday).div(PAY_DURATION));
+            lastPayday = now;
+
+            if (payment > 0) {
+                lastEmployee.transfer(payment);
+                // solhint-disable-next-line not-rely-on-time
+                emit OnPay(lastEmployee, payment, now);
+            }
+        }
         /* solhint-enable not-rely-on-time */
 
-        updateEmployee(_employee, _employeeName);
-        updateSalary(_salary);
+        emit OnUpdateEmployee(_newAddress);
+    }
 
-        if (payment > 0) {
-            lastEmployee.transfer(payment);
-            // solhint-disable-next-line not-rely-on-time
-            emit OnPay(lastEmployee, payment, now);
+    function updateEmployeeSalary(
+        uint _newSalary
+    )
+    external
+    onlyOwner
+    {
+        require(_newSalary > 0);
+        
+        uint unpaidSalary = 0;
+        /* solhint-disable not-rely-on-time */
+        if (employee != 0x0 && lastPayday != 0) {
+            unpaidSalary = salary.mul(now.sub(lastPayday).div(PAY_DURATION));
         }
+        salary = _newSalary.mul(1 ether);
+
+        // Pay unpaid salary based on old salary
+        if (unpaidSalary > 0) {
+            lastPayday = now;
+            employee.transfer(unpaidSalary);
+            emit OnPay(employee, unpaidSalary, now);
+        }
+        /* solhint-enable not-rely-on-time */
+
+        emit OnUpdateSalary(_newSalary);
     }
 
     function withdraw(uint amount)
     external
-    onlyOwner {
+    onlyOwner
+    {
         require(amount <= address(this).balance);
 
         owner.transfer(amount);
@@ -104,38 +131,35 @@ contract Payroll {
         emit OnWithdraw(amount, now);
     }
 
-    function updateEmployee(address _employee, bytes32 _employeeName)
+    function getEmployee()
     public
-    onlyOwner {
-        require(_employee != 0x0 && _employeeName != "");
-
-        employee = _employee;
-        employeeName = _employeeName;
-
-        emit OnUpdateEmployee(_employee);
+    view
+    returns (address)
+    {
+        return employee;
     }
 
-    function updateSalary(uint _salary)
+    function getSalary()
     public
-    onlyOwner {
-        require(_salary > 0);
-
-        // ether base is too big
-        salary = _salary.mul(1 finney);
-        
-
-        emit OnUpdateSalary(_salary);
+    view
+    returns (uint)
+    {
+        return salary;
     }
 
     function calculateRunway()
-    public view
-    returns (uint) {
+    public
+    view
+    returns (uint)
+    {
         return address(this).balance.div(salary);
     }
 
     function hasEnoughFund()
-    public view
-    returns (bool) {
+    public
+    view
+    returns (bool)
+    {
         return calculateRunway() > 0;
     }
 }

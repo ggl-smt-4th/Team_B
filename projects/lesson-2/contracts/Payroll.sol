@@ -102,7 +102,7 @@ contract Payroll {
     onlyOwner
     {
         require(_addr != 0x0 && _salary > 0);
-        require(!hasEmployee(_addr), "employee address already exist");
+        require(!hasEmployee(_addr));
 
         uint salary = _salary.mul(SALARY_BASE);
         employeeList.push(Employee(_addr, salary, now));

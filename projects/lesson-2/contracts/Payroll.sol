@@ -1,4 +1,4 @@
-pragma solidity 0.4.24;
+pragma solidity 0.4.19;
 // pragma experimental "v0.5.0";
 
 import "./SafeMath.sol";

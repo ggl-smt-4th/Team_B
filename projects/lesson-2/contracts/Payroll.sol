@@ -68,7 +68,7 @@ contract Payroll {
     onlyEmployee
     {
         // solhint-disable-next-line indent
-        (Employee memory employee, uint idx) = getEmployee(msg.sender);
+        var (employee, idx) = getEmployee(msg.sender);
         employeeList[idx].lastPayday = now;
 
         uint months = unpaidMonths(employee.lastPayday);
@@ -122,7 +122,7 @@ contract Payroll {
         require(_addr != 0x0 && _newAddr != 0x0 && _salary > 0);
 
         // solhint-disable-next-line indent
-        (Employee memory employee, uint idx) = getEmployee(_addr);
+        var (employee, idx) = getEmployee(_addr);
         if (employee.addr == 0x0) {
             revert("Employee not found");
         }
@@ -146,7 +146,7 @@ contract Payroll {
     onlyOwner
     {
         // solhint-disable-next-line indent
-        (Employee memory employee, uint idx) = getEmployee(_addr);
+        var (employee, idx) = getEmployee(_addr);
         if (employee.addr == 0x0) {
             revert("Employee not found");
         }
@@ -203,7 +203,7 @@ contract Payroll {
     returns (bool)
     {
         // solhint-disable-next-line indent
-        (Employee memory employee,) = getEmployee(_addr);
+        var (employee,) = getEmployee(_addr);
         return employee.addr != 0x0;
     }
 

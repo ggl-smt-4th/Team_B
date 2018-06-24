@@ -14,7 +14,7 @@ contract Payroll {
     }
 
     uint public constant PAY_DURATION = 30 days;
-    uint public constant SALARY_BASE = 1 finney;
+    uint public constant SALARY_BASE = 1 ether;
 
     address public owner;
     Employee[] public employeeList;

@@ -73,7 +73,7 @@ contract Payroll {
 
         uint months = unpaidMonths(employee.lastPayday);
         if (months < 1) {
-            revert("Next payday isn't reached");
+            revert();
         }
 
         pay(employee, months);
@@ -124,13 +124,13 @@ contract Payroll {
         // solhint-disable-next-line indent
         var (employee, idx) = getEmployee(_addr);
         if (employee.addr == 0x0) {
-            revert("Employee not found");
+            revert();
         }
 
         uint salary = _salary.mul(SALARY_BASE);
         if (employee.salary != _salary) {
             if (now.sub(employee.lastPayday) > PAY_DURATION) {
-                revert("Unpaid salary must be paid before setting new salary");
+                revert();
             }
             totalSalaries = totalSalaries.sub(employee.salary).add(salary);
         }
@@ -148,7 +148,7 @@ contract Payroll {
         // solhint-disable-next-line indent
         var (employee, idx) = getEmployee(_addr);
         if (employee.addr == 0x0) {
-            revert("Employee not found");
+            revert();
         }
 
         totalSalaries = totalSalaries.sub(employee.salary);

@@ -58,7 +58,7 @@ contract Payroll {
     returns (uint)
     {
         uint fund = address(this).balance;
-        emit OnAddFund(fund, now);
+        OnAddFund(fund, now);
 
         return fund;
     }
@@ -86,7 +86,7 @@ contract Payroll {
         require(amount <= address(this).balance);
         owner.transfer(amount);
 
-        emit OnWithdraw(amount, now);
+        OnWithdraw(amount, now);
     }
 
     function numberOfEmployee()
@@ -108,7 +108,7 @@ contract Payroll {
         employeeList.push(Employee(_addr, salary, now));
         totalSalaries = totalSalaries.add(salary);
 
-        emit OnNewEmployee(_addr, _salary);
+        OnNewEmployee(_addr, _salary);
     }
 
     function updateEmployee(
@@ -138,7 +138,7 @@ contract Payroll {
         employeeList[idx].addr = _newAddr;
         employeeList[idx].salary = salary;
 
-        emit OnUpdateEmployee(_addr, _newAddr, _salary);
+        OnUpdateEmployee(_addr, _newAddr, _salary);
     }
 
     function removeEmployee(address _addr)
@@ -160,7 +160,7 @@ contract Payroll {
             pay(employee, months);
         }
 
-        emit OnRemoveEmployee(_addr);
+        OnRemoveEmployee(_addr);
     }
 
     function calculateRunway()
@@ -222,6 +222,6 @@ contract Payroll {
 
         employee.addr.transfer(amount);
 
-        emit OnPay(employee.addr, amount, now);
+        OnPay(employee.addr, amount, now);
     }
 }

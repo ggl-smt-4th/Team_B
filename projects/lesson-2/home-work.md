@@ -25,18 +25,6 @@ calculateRunway 函数每次调用都需要遍历一遍数组来统计薪水，�
 
 #### After
 
-完整实现请看**Payroll.sol**内的 OptimizedPayroll 合约
-
-```solidity
-    function calculateRunway()
-    public
-    view
-    returns (uint)
-    {
-        return address(this).balance.div(totalSalaries);
-    }
-```
-
 | NumberOfEmployee | EstimateGas |
 | ---------------- | ----------- |
 | 1                | 22217       |

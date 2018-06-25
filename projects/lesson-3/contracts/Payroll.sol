@@ -25,6 +25,10 @@ contract Payroll is Ownable {
     //员工合计的工资数，在add、update、remove的时候进行修改，优化calculateRunway方法调用gas消耗
     uint public totalSalary = 0;
 
+    //构造函数
+    function Payroll() payable {
+    }
+
     //内部函数，清算支付某员工之前所有的薪水
     function _patialPaied(Employee employee) private {
         var payment = employee.salary.mul((now.sub(employee.lastPayday))).div(payDuration);
@@ -54,8 +58,8 @@ contract Payroll is Ownable {
     //从员工mapping中删除某个ID的员工
     function removeEmployee(address employeeId) public onlyOwner employeeExist(employeeId) {
         var employee = employees[employeeId];
-        _patialPaied(employee);
         totalSalary = totalSalary.sub(employee.salary);
+        _patialPaied(employee);
         delete employees[employeeId];
     }
 
@@ -72,8 +76,8 @@ contract Payroll is Ownable {
 
         totalSalary = totalSalary.add((salary.mul(1 ether)).sub(employee.salary));
         employees[employeeId].salary = salary.mul(1 ether);
-        _patialPaied(employee);
         employees[employeeId].lastPayday = now;
+        _patialPaied(employee);
     }
 
     //设置value，通过外部账户向合约账户中添加ether

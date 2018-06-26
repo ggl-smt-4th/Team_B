@@ -18,9 +18,9 @@ contract Payroll is Ownable{
     mapping(address => Employee) employees;
 	uint totalSalary;
 
-//    function Payroll() payable public {
-//        owner = msg.sender;
-//    }
+    function Payroll() payable public {
+        owner = msg.sender;
+    }
     
 //    modifier onlyOwner {
 //        require(msg.sender == owner); 
@@ -69,12 +69,12 @@ contract Payroll is Ownable{
 
     function updateEmployee(address employeeAddress, uint salary) onlyOwner empployeeExist(employeeAddress) partialPay(employeeAddress) public {
         //_partialPay(emp);
-        employees[employeeAddress].salary = salary.mul(1 ether);
-        employees[employeeAddress].lastPayday = now;
-        //totalSalary = totalSalary - employees[employeeAddress].salary + salary * 1 ether;
         totalSalary = totalSalary
             .sub(employees[employeeAddress].salary)
             .add(salary.mul(1 ether));
+        employees[employeeAddress].salary = salary.mul(1 ether);
+        employees[employeeAddress].lastPayday = now;
+        //totalSalary = totalSalary - employees[employeeAddress].salary + salary * 1 ether;
     }
     
     function changePaymentAddress(address oldAddr, address newAddr) onlyOwner empployeeExist(oldAddr) public {

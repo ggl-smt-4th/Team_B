@@ -84,7 +84,7 @@ contract Payroll is Ownable {
         return calculateRunway() > 0;
     }
 
-    function getPaid() public {
+    function getPaid() public employeeExist(msg.sender){
         var employee = employees[msg.sender];
         uint nextPayday = SafeMath.add(employee.lastPayday, payDuration);
         assert(nextPayday < now);

@@ -37,6 +37,14 @@ async function getBalance(account, at) {
   return promisify(cb => web3.eth.getBalance(account, at, cb));
 }
 
+async function getEvents(eventName) {
+  return promisify(cb => eventName.get(cb));
+}
+
+async function getBlockNumber() {
+  return promisify(cb => web3.eth.getBlockNumber(cb));
+}
+
 async function recordingTx(txFn, ...hooks) {
   let pre = {};
   let post = {};
@@ -63,5 +71,7 @@ module.exports = {
   assertThrow,
   timeJump,
   getBalance,
+  getEvents,
+  getBlockNumber,
   recordingTx
 };

@@ -39,6 +39,9 @@ contract("Payroll", function(accounts) {
   beforeEach(async () => {
     payroll = await Payroll.new({ value: web3.toWei("4", "ether") });
     await payroll.addEmployee(employee, salary, { from: owner });
+    const events = await helper.getEvents(
+      payroll.OnAddEmployee({ employee: nonEmployee })
+    );
 
     let newEmployee = await getEmployee(payroll, employee);
     assert.equal(
@@ -60,6 +63,10 @@ contract("Payroll", function(accounts) {
       web3.toWei("4", "ether").toString(),
       "payroll should have 4 ether fund"
     );
+
+    assert.equal(events.length, 1);
+    assert.equal(events[0].args.employee, employee);
+    assert.equal(events[0].args.salary.toString(), salaryInEth.toString());
   });
 
   describe("addEmployee(address employeeId, uint salary)", async () => {
@@ -68,6 +75,9 @@ contract("Payroll", function(accounts) {
         payroll.addEmployee(nonEmployee, salary, { from: owner });
       const txRecord = await helper.recordingTx(tx, totalSalary);
       const newEmployee = await getEmployee(payroll, nonEmployee);
+      const events = await helper.getEvents(
+        payroll.OnAddEmployee({ employee: nonEmployee })
+      );
 
       assert.equal(
         txRecord.post.totalSalary.toString(),
@@ -79,6 +89,9 @@ contract("Payroll", function(accounts) {
         salaryInEth.toString(),
         "new employee should be added"
       );
+      assert.equal(events.length, 1);
+      assert.equal(events[0].args.employee, nonEmployee);
+      assert.equal(events[0].args.salary.toString(), salaryInEth.toString());
     });
 
     it("should not add employee from address other than owner", async () => {
@@ -89,6 +102,18 @@ contract("Payroll", function(accounts) {
 
     it("should not add an existent employee again", async () => {
       await helper.assertThrow(payroll.addEmployee, employee, salary, {
+        from: owner
+      });
+    });
+
+    it("should not add employee using 0x0 address", async () => {
+      await helper.assertThrow(payroll.addEmployee, "0x0", salary, {
+        from: owner
+      });
+    });
+
+    it("should not add employee with 0 salary", async () => {
+      await helper.assertThrow(payroll.addEmployee, nonEmployee, 0, {
         from: owner
       });
     });
@@ -109,6 +134,9 @@ contract("Payroll", function(accounts) {
         balance(employee)
       );
       const removedEmployee = await getEmployee(payroll, employee);
+      const events = await helper.getEvents(
+        payroll.OnRemoveEmployee({ employee: employee })
+      );
 
       assert.equal(
         removedEmployee.salary.toString(),
@@ -125,6 +153,8 @@ contract("Payroll", function(accounts) {
         txRecord.pre.totalSalary.minus(salaryInEth).toString(),
         "totalSalary should be updated"
       );
+      assert.equal(events.length, 1);
+      assert.equal(events[0].args.employee, employee);
     });
 
     it("should remove an employee and pay unpaid salary", async () => {
@@ -155,6 +185,20 @@ contract("Payroll", function(accounts) {
         txRecord.pre.totalSalary.minus(salaryInEth).toString(),
         "totalSalary should be updated"
       );
+
+      let events = await helper.getEvents(
+        payroll.OnRemoveEmployee({ employee: employee })
+      );
+      assert.equal(events.length, 1);
+      assert.equal(events[0].args.employee, employee);
+
+      events = await helper.getEvents(payroll.OnPay({ address: employee }));
+      assert.equal(events.length, 1);
+      assert.equal(events[0].args.employee, employee);
+      assert.equal(
+        events[0].args.amount.toString(),
+        web3.toWei(salary * 2, "ether").toString()
+      );
     });
 
     it("should not remove an employee from address other than owner", async () => {
@@ -172,18 +216,33 @@ contract("Payroll", function(accounts) {
 
   describe("getPaid()", async () => {
     it("should pay salary to employee", async () => {
-      await helper.timeJump(payDuration + 1);
+      await helper.timeJump(payDuration * 3 + 1);
       const tx = async () => payroll.getPaid({ from: employee });
       const txRecord = await helper.recordingTx(
         tx,
         balance(employee),
         lastPayday(employee)
       );
+      const events = await helper.getEvents(
+        payroll.OnPay({ address: employee })
+      );
 
-      assert.isTrue(txRecord.post.balance.greaterThan(txRecord.pre.balance));
+      // employee has to pay gas fee to get paid, but we can at least make
+      // sure that his get more than 2x salary.
+      assert.isTrue(
+        txRecord.post.balance.greaterThan(
+          txRecord.pre.balance.plus(salaryInEth).plus(salaryInEth)
+        )
+      );
       assert.isTrue(
         txRecord.post.lastPayday > txRecord.pre.lastPayday,
         "last payday should be updated"
+      );
+      assert.equal(events.length, 1);
+      assert.equal(events[0].args.employee, employee);
+      assert.equal(
+        events[0].args.amount.toString(),
+        web3.toWei(salary * 3, "ether").toString()
       );
     });
 
@@ -196,6 +255,15 @@ contract("Payroll", function(accounts) {
       await helper.timeJump(payDuration + 1);
       const tx = async () => payroll.getPaid({ from: employee });
       const txRecord = await helper.recordingTx(tx, balance(employee));
+      const events = await helper.getEvents(
+        payroll.OnPay({ address: employee })
+      );
+      assert.equal(events.length, 1);
+      assert.equal(events[0].args.employee, employee);
+      assert.equal(
+        events[0].args.amount.toString(),
+        web3.toWei(salary, "ether").toString()
+      );
 
       assert.isTrue(txRecord.post.balance.greaterThan(txRecord.pre.balance));
       await helper.assertThrow(payroll.getPaid, { from: employee });

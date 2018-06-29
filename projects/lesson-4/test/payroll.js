@@ -2,10 +2,11 @@ const Payroll = artifacts.require("Payroll");
 const helper = require("./helper");
 
 async function getEmployee(payroll, address) {
-  let ret = await payroll.employees.call(address);
+  let ret = await payroll.employeeS.call(address);
   return {
-    salary: ret[0],
-    lastPayday: ret[1]
+    addr: ret[0],
+    salary: ret[1],
+    lastPayday: ret[2]
   };
 }
 
@@ -15,7 +16,7 @@ contract("Payroll", function(accounts) {
   const nonEmployee = accounts[2];
   const salary = 1;
   const salaryInEth = web3.toWei("1", "ether");
-  const payDuration = 10; // seconds
+  const payDuration = 60 * 60 * 24 * 30; // 30 days
 
   let payroll;
 

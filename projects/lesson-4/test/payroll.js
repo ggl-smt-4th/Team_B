@@ -20,6 +20,22 @@ contract("Payroll", function(accounts) {
 
   let payroll;
 
+  async function totalSalary() {
+    return await payroll.totalSalary.call();
+  }
+
+  function balance(address) {
+    return async function balance() {
+      return await helper.getBalance(address);
+    };
+  }
+
+  function lastPayday(employee) {
+    return async function lastPayday() {
+      return (await getEmployee(payroll, employee)).lastPayday;
+    };
+  }
+
   beforeEach(async () => {
     payroll = await Payroll.new({ value: web3.toWei("4", "ether") });
     await payroll.addEmployee(employee, salary, { from: owner });
@@ -48,17 +64,16 @@ contract("Payroll", function(accounts) {
 
   describe("addEmployee(address employeeId, uint salary)", async () => {
     it("should add employee", async () => {
-      const totalSalaryPre = await payroll.totalSalary.call();
-      await payroll.addEmployee(nonEmployee, salary, { from: owner });
-      const totalSalaryPost = await payroll.totalSalary.call();
+      const tx = async () =>
+        payroll.addEmployee(nonEmployee, salary, { from: owner });
+      const txRecord = await helper.recordingTx(tx, totalSalary);
+      const newEmployee = await getEmployee(payroll, nonEmployee);
 
       assert.equal(
-        totalSalaryPost.toString(),
-        totalSalaryPre.plus(salaryInEth).toString(),
+        txRecord.post.totalSalary.toString(),
+        txRecord.pre.totalSalary.plus(salaryInEth).toString(),
         "totalSalary should be updated"
       );
-
-      const newEmployee = await getEmployee(payroll, nonEmployee);
       assert.equal(
         newEmployee.salary.toString(),
         salaryInEth.toString(),
@@ -87,56 +102,58 @@ contract("Payroll", function(accounts) {
 
   describe("removeEmployee(address employeeId)", async () => {
     it("should remove an employee", async () => {
-      const totalSalaryPre = await payroll.totalSalary.call();
-      const employeeBalancePre = await helper.getBalance(employee);
-      await payroll.removeEmployee(employee, { from: owner });
-      const totalSalaryPost = await payroll.totalSalary.call();
-      const employeeBalancePost = await helper.getBalance(employee);
-
-      assert.equal(
-        employeeBalancePost.toString(),
-        employeeBalancePre.toString(),
-        "should not have unpaid salary"
-      );
-      assert.equal(
-        totalSalaryPost.toString(),
-        totalSalaryPre.minus(salaryInEth).toString(),
-        "totalSalary should be updated"
+      const tx = async () => payroll.removeEmployee(employee, { from: owner });
+      const txRecord = await helper.recordingTx(
+        tx,
+        totalSalary,
+        balance(employee)
       );
       const removedEmployee = await getEmployee(payroll, employee);
+
       assert.equal(
         removedEmployee.salary.toString(),
         "0",
         "employee should be removed"
       );
+      assert.equal(
+        txRecord.post.balance.toString(),
+        txRecord.pre.balance.toString(),
+        "should not have unpaid salary"
+      );
+      assert.equal(
+        txRecord.post.totalSalary.toString(),
+        txRecord.pre.totalSalary.minus(salaryInEth).toString(),
+        "totalSalary should be updated"
+      );
     });
 
     it("should remove an employee and pay unpaid salary", async () => {
       await helper.timeJump(payDuration * 2 + 1);
-      const totalSalaryPre = await payroll.totalSalary.call();
-      const employeeBalancePre = await helper.getBalance(employee);
-      await payroll.removeEmployee(employee, { from: owner });
-      const totalSalaryPost = await payroll.totalSalary.call();
-      const employeeBalancePost = await helper.getBalance(employee);
+      const tx = async () => payroll.removeEmployee(employee, { from: owner });
+      const txRecord = await helper.recordingTx(
+        tx,
+        totalSalary,
+        balance(employee)
+      );
+      const removedEmployee = await getEmployee(payroll, employee);
 
       assert.equal(
-        employeeBalancePost.toString(),
-        employeeBalancePre
+        removedEmployee.salary.toString(),
+        "0",
+        "employee should be removed"
+      );
+      assert.equal(
+        txRecord.post.balance.toString(),
+        txRecord.pre.balance
           .plus(salaryInEth)
           .plus(salaryInEth)
           .toString(),
         "employee should be paid 2x salary"
       );
       assert.equal(
-        totalSalaryPost.toString(),
-        totalSalaryPre.minus(salaryInEth).toString(),
+        txRecord.post.totalSalary.toString(),
+        txRecord.pre.totalSalary.minus(salaryInEth).toString(),
         "totalSalary should be updated"
-      );
-      const removedEmployee = await getEmployee(payroll, employee);
-      assert.equal(
-        removedEmployee.salary.toString(),
-        "0",
-        "employee should be removed"
       );
     });
 
@@ -156,15 +173,16 @@ contract("Payroll", function(accounts) {
   describe("getPaid()", async () => {
     it("should pay salary to employee", async () => {
       await helper.timeJump(payDuration + 1);
-      const employeeBalancePre = await helper.getBalance(employee);
-      const lastPaydayPre = (await getEmployee(payroll, employee)).lastPayday;
-      await payroll.getPaid({ from: employee });
-      const employeeBalancePost = await helper.getBalance(employee);
-      const lastPaydayPost = (await getEmployee(payroll, employee)).lastPayday;
+      const tx = async () => payroll.getPaid({ from: employee });
+      const txRecord = await helper.recordingTx(
+        tx,
+        balance(employee),
+        lastPayday(employee)
+      );
 
-      assert.isTrue(employeeBalancePost.greaterThan(employeeBalancePre));
+      assert.isTrue(txRecord.post.balance.greaterThan(txRecord.pre.balance));
       assert.isTrue(
-        lastPaydayPost > lastPaydayPre,
+        txRecord.post.lastPayday > txRecord.pre.lastPayday,
         "last payday should be updated"
       );
     });
@@ -176,11 +194,10 @@ contract("Payroll", function(accounts) {
 
     it("should not pay again until next payday", async () => {
       await helper.timeJump(payDuration + 1);
-      const employeeBalancePre = await helper.getBalance(employee);
-      await payroll.getPaid({ from: employee });
-      const employeeBalancePost = await helper.getBalance(employee);
+      const tx = async () => payroll.getPaid({ from: employee });
+      const txRecord = await helper.recordingTx(tx, balance(employee));
 
-      assert.isTrue(employeeBalancePost.greaterThan(employeeBalancePre));
+      assert.isTrue(txRecord.post.balance.greaterThan(txRecord.pre.balance));
       await helper.assertThrow(payroll.getPaid, { from: employee });
     });
   });

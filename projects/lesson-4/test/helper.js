@@ -37,8 +37,31 @@ async function getBalance(account, at) {
   return promisify(cb => web3.eth.getBalance(account, at, cb));
 }
 
+async function recordingTx(txFn, ...hooks) {
+  let pre = {};
+  let post = {};
+
+  for (let i = 0; i < hooks.length; i++) {
+    let hook = hooks[i];
+    pre[hook.name] = await hook();
+  }
+
+  await txFn();
+
+  for (let i = 0; i < hooks.length; i++) {
+    let hook = hooks[i];
+    post[hook.name] = await hook();
+  }
+
+  return {
+    pre,
+    post
+  };
+}
+
 module.exports = {
   assertThrow,
   timeJump,
-  getBalance
+  getBalance,
+  recordingTx
 };

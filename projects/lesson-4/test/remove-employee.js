@@ -8,23 +8,22 @@ contract('Payroll', (accounts) => {
 
   let payroll;
 
-  beforeEach("Setup contract for each test cases", () => {
-    return Payroll.new().then(instance => {
-      payroll = instance;
-      return payroll.addEmployee(employee, salary, {from: owner});
-    });
+  beforeEach("Setup contract for each test cases", async () => {
+    payroll = await Payroll.deployed();
+    return await payroll.addEmployee(employee, salary, {from: owner});
   });
 
-  it("Test call removeEmployee() by owner", () => {
+  it("Test call removeEmployee() by owner", async () => {
     // Remove employee
-    return payroll.removeEmployee(employee, {from: owner});
+    return await payroll.removeEmployee(employee, {from: owner});
   });
 
-  it("Test call removeEmployee() by guest", () => {
-    return payroll.removeEmployee(employee, {from: guest}).then(() => {
+  it("Test call removeEmployee() by guest", async () => {
+    return await payroll.removeEmployee(employee, {from: guest}).then(() => {
       assert(false, "Should not be successful");
     }).catch(error => {
       assert.include(error.toString(), "Error: VM Exception", "Cannot call removeEmployee() by guest");
     });
   });
+
 });

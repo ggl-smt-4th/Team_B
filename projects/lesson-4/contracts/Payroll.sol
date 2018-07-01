@@ -15,10 +15,10 @@ contract Payroll is Ownable {
         uint lastPayday;
     }
 
-    modifier onlyOwner {
-        require(msg.sender == owner);
-        _;
-    }
+    //modifier onlyOwner {
+    //    require(msg.sender == owner);
+    //    _;
+    //}
 
     modifier shouldExist(address employeeId) {
         assert(employees[employeeId].lastPayday != 0);
@@ -39,7 +39,7 @@ contract Payroll is Ownable {
      */
     mapping(address => Employee) public employees;
 
-    function Payroll() payable public Ownable {
+    constructor() payable public {
         owner = msg.sender;
     }
 

@@ -71,7 +71,7 @@ class EmployeeList extends Component {
         let employeeCount = info[2].toNumber();
 
         if (employeeCount === 0) {
-          this.setState({ loading: false });
+          this.setState({ employees: [], loading: false });
           return;
         }
 

@@ -55,7 +55,7 @@ class EmployeeList extends Component {
     columns[3].render = (text, record) => (
       <Popconfirm
         title="你确定删除吗?"
-        onConfirm={() => this.removeEmployee(record.address)}
+        onConfirm={this.removeEmployee.bind(this, record.address)}
       >
         <a href="#">Delete</a>
       </Popconfirm>
@@ -64,21 +64,35 @@ class EmployeeList extends Component {
 
   async componentDidMount() {
     const { payroll, account } = this.props;
+    const refresh = async (error, result) => {
+      if (!error) {
+        let info = await payroll.getEmployerInfo.call({ from: account });
+        let employeeCount = info[2].toNumber();
 
-    let info = await payroll.getEmployerInfo.call({ from: account });
-    let employeeCount = info[2].toNumber();
+        if (employeeCount === 0) {
+          this.setState({ loading: false });
+          return;
+        }
 
-    if (employeeCount === 0) {
-      this.setState({ loading: false });
-      return;
-    }
+        this.loadEmployees(employeeCount);
+      }
+    };
 
-    this.loadEmployees(employeeCount);
+    this.onAddEmployee = payroll.AddEmployee(refresh);
+    this.onUpdateEmployee = payroll.UpdateEmployee(refresh);
+    this.onRemoveEmployee = payroll.RemoveEmployee(refresh);
+    await refresh(null);
+  }
+
+  componentWillUnmount() {
+    this.onAddEmployee.stopWatching();
+    this.onUpdateEmployee.stopWatching();
+    this.onRemoveEmployee.stopWatching();
   }
 
   loadEmployees = async employeeCount => {
     const { payroll, account, web3 } = this.props;
-    let { employees } = this.state;
+    let employees = [];
 
     for (let i = 0; i < employeeCount; i++) {
       let [
@@ -130,7 +144,10 @@ class EmployeeList extends Component {
       <Modal
         title="增加员工"
         visible={this.state.showModal}
-        onOk={this.addEmployee}
+        onOk={() => {
+          this.addEmployee();
+          this.setState({ showModal: false });
+        }}
         onCancel={() => this.setState({ showModal: false })}
       >
         <Form>

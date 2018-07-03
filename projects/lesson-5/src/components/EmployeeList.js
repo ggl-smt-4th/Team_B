@@ -20,7 +20,7 @@ const columns = [
     key: 'address'
   },
   {
-    title: '薪水',
+    title: '薪水(ether)',
     dataIndex: 'salary',
     key: 'salary'
   },
@@ -39,7 +39,6 @@ const columns = [
 class EmployeeList extends Component {
   constructor(props) {
     super(props);
-
     this.state = {
       loading: true,
       employees: [],
@@ -63,31 +62,67 @@ class EmployeeList extends Component {
     );
   }
 
-  componentDidMount() {
+  async componentDidMount() {
     const { payroll, account } = this.props;
-    payroll.checkInfo
-      .call({
-        from: account
-      })
-      .then(result => {
-        const employeeCount = result[2].toNumber();
 
-        if (employeeCount === 0) {
-          this.setState({ loading: false });
-          return;
-        }
+    let info = await payroll.getEmployerInfo.call({ from: account });
+    let employeeCount = info[2].toNumber();
 
-        this.loadEmployees(employeeCount);
-      });
+    if (employeeCount === 0) {
+      this.setState({ loading: false });
+      return;
+    }
+
+    this.loadEmployees(employeeCount);
   }
 
-  loadEmployees(employeeCount) {}
+  loadEmployees = async employeeCount => {
+    const { payroll, account, web3 } = this.props;
+    let { employees } = this.state;
 
-  addEmployee = () => {};
+    for (let i = 0; i < employeeCount; i++) {
+      let [
+        address,
+        salary,
+        lastPaidDayInUnix,
+        balance
+      ] = await payroll.getEmployeeInfo.call(i, { from: account });
 
-  updateEmployee = (address, salary) => {};
+      employees.push({
+        address,
+        salary: web3.fromWei(salary.toNumber(), 'ether'),
+        lastPaidDay: new Date(lastPaidDayInUnix.toNumber() * 1000).toString(),
+        balance: web3.fromWei(balance.toNumber(), 'ether')
+      });
+    }
+    this.setState({ employees, loading: false });
+  };
 
-  removeEmployee = employeeId => {};
+  addEmployee = async () => {
+    const { payroll, account } = this.props;
+    const { address, salary } = this.state;
+
+    // let gas = await payroll.addEmployee.estimateGas(address, parseInt(salary, 10), {from: account});
+    await payroll.addEmployee(address, parseInt(salary, 10), {
+      from: account,
+      gas: 1000000
+    });
+  };
+
+  updateEmployee = async (address, salary) => {
+    const { payroll, account } = this.props;
+
+    await payroll.updateEmployee(address, parseInt(salary, 10), {
+      from: account,
+      gas: 1000000
+    });
+  };
+
+  removeEmployee = async employeeId => {
+    const { payroll, account } = this.props;
+
+    await payroll.removeEmployee(employeeId, { from: account, gas: 1000000 });
+  };
 
   renderModal() {
     return (

@@ -10,7 +10,19 @@ class Employee extends Component {
   }
 
   async componentDidMount() {
+    const { payroll } = this.props;
+
+    this.onGetPaid = payroll.GetPaid(async (error, result) => {
+      if (!error) {
+        await this.checkEmployee();
+      }
+    });
+
     await this.checkEmployee();
+  }
+
+  componentWillUnmount() {
+    this.onGetPaid.stopWatching();
   }
 
   checkEmployee = async () => {

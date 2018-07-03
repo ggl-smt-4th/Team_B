@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Card, Col, Row, Layout, Alert, message, Button } from 'antd';
+import { Card, Col, Row, Layout, Alert, Button } from 'antd';
 
 import Common from './Common';
 

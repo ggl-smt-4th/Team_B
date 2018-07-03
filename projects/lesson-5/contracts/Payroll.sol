@@ -60,7 +60,6 @@ contract Payroll is Ownable {
         employees[employeeId] = Employee(index, salary, now);
 
         totalSalary = totalSalary.add(salary);
-        AddEmployee(msg.sender, employeeId, salary);
     }
 
     function removeEmployee(address employeeId) public onlyOwner shouldExist(employeeId) {
@@ -81,7 +80,6 @@ contract Payroll is Ownable {
 
         // adjust length
         employeeAddressList.length -= 1;
-        RemoveEmployee(msg.sender, employeeId);
     }
 
     function changePaymentAddress(address oldAddress, address newAddress) public onlyOwner shouldExist(oldAddress) shouldNotExist(newAddress) {
@@ -100,12 +98,10 @@ contract Payroll is Ownable {
         employees[employeeId].salary = salary;
         employees[employeeId].lastPayday = now;
         totalSalary = totalSalary.add(salary).sub(oldSalary);
-
-        UpdateEmployee(msg.sender, employeeId, salary);
     }
 
     function addFund() payable public returns (uint) {
-        AddFund(msg.sender, msg.value);
+        // AddFund(msg.sender, msg.value);
         return address(this).balance;
     }
 
@@ -128,12 +124,13 @@ contract Payroll is Ownable {
 
         employees[employeeId].lastPayday = nextPayday;
         employeeId.transfer(employees[employeeId].salary);
-        GetPaid(msg.sender, employees[employeeId].salary);
     }
 
     function getEmployerInfo() view public returns (uint balance, uint runway, uint employeeCount) {
         balance = address(this).balance;
-        runway = calculateRunway();
+        if (totalSalary > 0) {
+            runway = calculateRunway();
+        }
         employeeCount = employeeAddressList.length;
     }
 

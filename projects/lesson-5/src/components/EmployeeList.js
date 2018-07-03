@@ -39,6 +39,7 @@ const columns = [
 class EmployeeList extends Component {
   constructor(props) {
     super(props);
+    this.mounted = false;
     this.state = {
       loading: true,
       employees: [],
@@ -81,6 +82,7 @@ class EmployeeList extends Component {
     this.onAddEmployee = payroll.AddEmployee(refresh);
     this.onUpdateEmployee = payroll.UpdateEmployee(refresh);
     this.onRemoveEmployee = payroll.RemoveEmployee(refresh);
+    this.mounted = true;
     await refresh(null);
   }
 
@@ -88,6 +90,7 @@ class EmployeeList extends Component {
     this.onAddEmployee.stopWatching();
     this.onUpdateEmployee.stopWatching();
     this.onRemoveEmployee.stopWatching();
+    this.mounted = false;
   }
 
   loadEmployees = async employeeCount => {
@@ -110,7 +113,9 @@ class EmployeeList extends Component {
         balance: web3.fromWei(balance.toNumber(), 'ether')
       });
     }
-    this.setState({ employees, loading: false });
+    if (this.mounted) {
+      this.setState({ employees, loading: false });
+    }
   };
 
   addEmployee = async () => {

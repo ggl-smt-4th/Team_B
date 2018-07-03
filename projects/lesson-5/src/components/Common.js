@@ -6,6 +6,7 @@ class Common extends Component {
     super(props);
 
     this.state = {};
+    this.mounted = false;
   }
 
   async componentDidMount() {
@@ -23,6 +24,7 @@ class Common extends Component {
     this.updateEmployee = payroll.UpdateEmployee(updateInfo);
     this.removeEmployee = payroll.RemoveEmployee(updateInfo);
 
+    this.mounted = true;
     await this.getEmployerInfo();
   }
 
@@ -32,17 +34,20 @@ class Common extends Component {
     this.addEmployee.stopWatching();
     this.updateEmployee.stopWatching();
     this.removeEmployee.stopWatching();
+    this.mounted = false;
   }
 
   getEmployerInfo = async () => {
     const { payroll, account, web3 } = this.props;
 
     let info = await payroll.getEmployerInfo.call({ from: account });
-    this.setState({
-      balance: web3.fromWei(info[0].toNumber()),
-      runway: info[1].toNumber(),
-      employeeCount: info[2].toNumber()
-    });
+    if (this.mounted) {
+      this.setState({
+        balance: web3.fromWei(info[0].toNumber()),
+        runway: info[1].toNumber(),
+        employeeCount: info[2].toNumber()
+      });
+    }
   };
 
   render() {

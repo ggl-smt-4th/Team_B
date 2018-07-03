@@ -89,6 +89,7 @@ class EmployeeList extends Component {
       ] = await payroll.getEmployeeInfo.call(i, { from: account });
 
       employees.push({
+        key: address,
         address,
         salary: web3.fromWei(salary.toNumber(), 'ether'),
         lastPaidDay: new Date(lastPaidDayInUnix.toNumber() * 1000).toString(),

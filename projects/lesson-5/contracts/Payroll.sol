@@ -40,12 +40,6 @@ contract Payroll is Ownable {
         _;
     }
 
-    event AddEmployee(address employer, address employee, uint salary);
-    event RemoveEmployee(address employer, address employee);
-    event UpdateEmployee(address employer, address employee, uint salary);
-    event AddFund(address employer, uint amount);
-    event GetPaid(address employee, uint amount);
-
     uint constant PAY_DURATION = 10 seconds;
     uint public totalSalary = 0;
     address[] employeeAddressList;

@@ -1,4 +1,4 @@
-import React, { Component } from 'react'
+import React, { Component } from 'react';
 import { Card, Col, Row, Layout, Alert, message, Button } from 'antd';
 
 import Common from './Common';
@@ -13,17 +13,15 @@ class Employer extends Component {
     this.checkEmployee();
   }
 
-  checkEmployee = () => {
-  }
+  checkEmployee = () => {};
 
-  getPaid = () => {
-  }
+  getPaid = () => {};
 
   renderContent() {
     const { salary, lastPaidDate, balance } = this.state;
 
     if (!salary || salary === '0') {
-      return   <Alert message="你不是员工" type="error" showIcon />;
+      return <Alert message="你不是员工" type="error" showIcon />;
     }
 
     return (
@@ -40,11 +38,7 @@ class Employer extends Component {
           </Col>
         </Row>
 
-        <Button
-          type="primary"
-          icon="bank"
-          onClick={this.getPaid}
-        >
+        <Button type="primary" icon="bank" onClick={this.getPaid}>
           获得酬劳
         </Button>
       </div>
@@ -59,9 +53,9 @@ class Employer extends Component {
         <Common account={account} payroll={payroll} web3={web3} />
         <h2>个人信息</h2>
         {this.renderContent()}
-      </Layout >
+      </Layout>
     );
   }
 }
 
-export default Employer
+export default Employer;

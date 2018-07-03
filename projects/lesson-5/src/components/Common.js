@@ -1,4 +1,4 @@
-import React, { Component } from 'react'
+import React, { Component } from 'react';
 import { Card, Col, Row } from 'antd';
 
 class Common extends Component {
@@ -8,52 +8,42 @@ class Common extends Component {
     this.state = {};
   }
 
-  componentDidMount() {
-    const { payroll, web3 } = this.props;
+  async componentDidMount() {
+    const { payroll } = this.props;
 
-    /**
-     * 事件相关，暂不要求
-     *
-     * const updateInfo = (error, result) => {
-     *   if (!error) {
-     *     this.checkInfo();
-     *   }
-     * }
+    const updateInfo = async (error, result) => {
+      if (!error) {
+        await this.getEmployerInfo();
+      }
+    };
 
-     * this.newFund = payroll.NewFund(updateInfo);
-     * this.getPaid = payroll.GetPaid(updateInfo);
-     * this.newEmployee = payroll.NewEmployee(updateInfo);
-     * this.updateEmployee = payroll.UpdateEmployee(updateInfo);
-     * this.removeEmployee = payroll.RemoveEmployee(updateInfo);
-     */
+    this.addFund = payroll.AddFund(updateInfo);
+    this.getPaid = payroll.GetPaid(updateInfo);
+    this.addEmployee = payroll.AddEmployee(updateInfo);
+    this.updateEmployee = payroll.UpdateEmployee(updateInfo);
+    this.removeEmployee = payroll.RemoveEmployee(updateInfo);
 
-    this.getEmployerInfo();
+    await this.getEmployerInfo();
   }
 
   componentWillUnmount() {
-    /**
-     * 事件相关，暂不要求
-     *
-     * this.newFund.stopWatching();
-     * this.getPaid.stopWatching();
-     * this.newEmployee.stopWatching();
-     * this.updateEmployee.stopWatching();
-     * this.removeEmployee.stopWatching();
-     */
+    this.addFund.stopWatching();
+    this.getPaid.stopWatching();
+    this.addEmployee.stopWatching();
+    this.updateEmployee.stopWatching();
+    this.removeEmployee.stopWatching();
   }
 
-  getEmployerInfo = () => {
+  getEmployerInfo = async () => {
     const { payroll, account, web3 } = this.props;
-    payroll.getEmployerInfo.call({
-      from: account,
-    }).then((result) => {
-      this.setState({
-        balance: web3.fromWei(result[0].toNumber()),
-        runway: result[1].toNumber(),
-        employeeCount: result[2].toNumber()
-      })
+
+    let info = await payroll.getEmployerInfo.call({ from: account });
+    this.setState({
+      balance: web3.fromWei(info[0].toNumber()),
+      runway: info[1].toNumber(),
+      employeeCount: info[2].toNumber()
     });
-  }
+  };
 
   render() {
     const { runway, balance, employeeCount } = this.state;
@@ -76,4 +66,4 @@ class Common extends Component {
   }
 }
 
-export default Common
+export default Common;

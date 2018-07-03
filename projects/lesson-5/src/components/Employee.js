@@ -3,19 +3,49 @@ import { Card, Col, Row, Layout, Alert, Button } from 'antd';
 
 import Common from './Common';
 
-class Employer extends Component {
+class Employee extends Component {
   constructor(props) {
     super(props);
     this.state = {};
   }
 
-  componentDidMount() {
-    this.checkEmployee();
+  async componentDidMount() {
+    await this.checkEmployee();
   }
 
-  checkEmployee = () => {};
+  checkEmployee = async () => {
+    const { payroll, account, web3 } = this.props;
 
-  getPaid = () => {};
+    let info = await payroll.getEmployerInfo.call({ from: account });
+    let employeeCount = info[2].toNumber();
+
+    if (employeeCount === 0) {
+      return;
+    }
+
+    // Here we hardcode to first employee
+    // TODO: remove hardcode employee after switch to metamask
+    let [
+      address,
+      salary,
+      lastPaidDayInUnix,
+      balance
+    ] = await payroll.getEmployeeInfo(0, { from: account });
+
+    this.setState({
+      address,
+      salary: web3.fromWei(salary.toNumber(), 'ether'),
+      lastPaidDate: new Date(lastPaidDayInUnix.toNumber() * 1000).toString(),
+      balance: web3.fromWei(balance.toNumber(), 'ether')
+    });
+  };
+
+  getPaid = async () => {
+    const { payroll } = this.props;
+    const { address } = this.state;
+
+    await payroll.getPaid({ from: address, gas: 1000000 });
+  };
 
   renderContent() {
     const { salary, lastPaidDate, balance } = this.state;
@@ -58,4 +88,4 @@ class Employer extends Component {
   }
 }
 
-export default Employer;
+export default Employee;

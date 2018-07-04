@@ -3,7 +3,7 @@ import { Card, Col, Row, Layout, Alert, message, Button } from 'antd';
 
 import Common from './Common';
 
-class Employer extends Component {
+class Employee extends Component {
   constructor(props) {
     super(props);
     this.state = {};
@@ -14,9 +14,34 @@ class Employer extends Component {
   }
 
   checkEmployee = () => {
+    const { payroll, account, web3 } = this.props;
+    payroll.employees.call(account, {
+      from: account,
+    }).then((result) => {
+      this.setState({
+        salary: web3.fromWei(result[0].toNumber()),
+        lastPaidDate: new Date(result[2].toNumber() * 1000).toString()
+      });
+    });
+    web3.eth.getBalance(account, (err, result) => {
+      this.setState({
+        balance: web3.fromWei(result.toNumber())
+      });    
+    });
   }
 
   getPaid = () => {
+    const { payroll, account, web3 } = this.props;
+    payroll.getPaid({
+      from: account,
+    }).then((result) => {
+      message.info("You have been paid!");
+    });
+    web3.eth.getBalance(account, (err, result) => {
+      this.setState({
+        balance: web3.fromWei(result.toNumber())
+      });    
+    });
   }
 
   renderContent() {
@@ -64,4 +89,4 @@ class Employer extends Component {
   }
 }
 
-export default Employer
+export default Employee

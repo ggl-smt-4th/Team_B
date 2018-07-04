@@ -16,7 +16,7 @@ class Common extends Component {
      *
      * const updateInfo = (error, result) => {
      *   if (!error) {
-     *     this.checkInfo();
+     *     this.getEmployerInfo();
      *   }
      * }
 

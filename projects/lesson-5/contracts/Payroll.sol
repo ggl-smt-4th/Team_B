@@ -147,4 +147,27 @@ contract Payroll is Ownable {
         lastPayday = employees[id].lastPayday;
         balance = address(id).balance;
     }
+          
+    function getInfo() returns (uint balance, uint runway, uint employeeCount) {
+        balance=this.balance;        
+        employeeCount=employeeAddressList.length;
+        if (employeeCount > 0) {
+            runway=calculateRunway();
+        }
+    }
+    
+    function checkInfo() returns (uint balance, uint runway, uint employeeCount) {
+        balance=this.balance;        
+        employeeCount=employeeAddressList.length;	
+        if (employeeCount > 0) {
+            runway=calculateRunway();
+        }
+    }
+
+    function checkEmployee(uint index) returns (address employeeId, uint salary, uint lastPayday) {
+        employeeId = employeeAddressList[index];
+        var employee = employees[employeeId];
+        salary = employee.salary;
+        lastPayday = employee.lastPayday;
+    }
 }

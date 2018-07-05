@@ -9,10 +9,12 @@ contract Payroll is Ownable {
         address id;
         uint salary;
         uint lastPayday;
+
     }
 
     uint constant payDuration = 30 days;
     uint public totalSalary = 0;
+    uint totalEmployee;
   
     mapping(address => Employee) public employees;
 
@@ -35,6 +37,7 @@ contract Payroll is Ownable {
 
         employees[employeeId] = Employee(employeeId, salary.mul(1 ether), now);
         totalSalary = totalSalary.add(employees[employeeId].salary);
+        totalEmployee = totalEmployee.add(1);
     }
 
     function removeEmployee(address employeeId) onlyOwner employeeExist (employeeId) {
@@ -43,6 +46,7 @@ contract Payroll is Ownable {
         _partialPaid(employee);
         totalSalary = totalSalary.sub(employees[employeeId].salary);
         delete employees[employeeId];
+        totalEmployee = totalEmployee.sub(1);
 
     }
 
@@ -87,5 +91,12 @@ contract Payroll is Ownable {
        assert(nextPayday<now);
        employee.lastPayday = nextPayday;
        employee.id.transfer(employee.salary);
+    }
+
+    function checkInfo() returns (uint balance, uint runway, uint employeeCount){
+        balance = this.balance;
+        runway = calculateRunway();
+        employeeCount = totalEmployee;
+
     }
 }

@@ -7,6 +7,12 @@ contract Payroll is Ownable {
 
     using SafeMath for uint;
 
+    event FundAdded(uint value);
+    event EmployeeAdded(address employee, uint salary);
+    event EmployeeUpdated(address employee, uint newSalary);
+    event EmployeeDeleted(address employee);
+    event Paid(address employee, uint value);
+
     /**
      * We are using mapping here, the key is already the address.
      */
@@ -50,6 +56,7 @@ contract Payroll is Ownable {
         .mul(now.sub(employees[employeeId].lastPayday))
         .div(PAY_DURATION);
         employeeId.transfer(payment);
+        Paid(employeeId, payment);
     }
 
     function addEmployee(address employeeId, uint salary) public onlyOwner shouldNotExist(employeeId) {
@@ -60,6 +67,7 @@ contract Payroll is Ownable {
         employees[employeeId] = Employee(index, salary, now);
 
         totalSalary = totalSalary.add(salary);
+        EmployeeAdded(employeeId, salary);
     }
 
     function removeEmployee(address employeeId) public onlyOwner shouldExist(employeeId) {
@@ -80,6 +88,8 @@ contract Payroll is Ownable {
 
         // adjust length
         employeeAddressList.length -= 1;
+
+        EmployeeDeleted(employeeId);
     }
 
     function changePaymentAddress(address oldAddress, address newAddress) public onlyOwner shouldExist(oldAddress) shouldNotExist(newAddress) {
@@ -98,9 +108,12 @@ contract Payroll is Ownable {
         employees[employeeId].salary = salary;
         employees[employeeId].lastPayday = now;
         totalSalary = totalSalary.add(salary).sub(oldSalary);
+
+        EmployeeUpdated(employeeId, salary);
     }
 
     function addFund() payable public returns (uint) {
+        FundAdded(address(this).balance);
         return address(this).balance;
     }
 
@@ -122,7 +135,10 @@ contract Payroll is Ownable {
         assert(nextPayday < now);
 
         employees[employeeId].lastPayday = nextPayday;
-        employeeId.transfer(employees[employeeId].salary);
+        uint salary = employees[employeeId].salary;
+        employeeId.transfer(salary);
+
+        Paid(employeeId, salary);
     }
 
     function getEmployerInfo() view public returns (uint balance, uint runway, uint employeeCount) {

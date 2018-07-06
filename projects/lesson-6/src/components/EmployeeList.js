@@ -66,21 +66,35 @@ class EmployeeList extends Component {
     );
   }
 
-  componentDidMount() {
+  async componentDidMount() {
     const { payroll, account } = this.props;
-    payroll.getEmployerInfo
-      .call({
-        from: account
-      })
-      .then(result => {
-        const employeeCount = result[2].toNumber();
+    const refresh = async (error, result) => {
+      if (!error) {
+        let info = await payroll.getEmployerInfo.call({ from: account });
+        let employeeCount = info[2].toNumber();
 
         if (employeeCount === 0) {
-          this.setState({ loading: false });
+          this.setState({ employees: [], loading: false });
           return;
         }
-        this.loadEmployees(employeeCount);
-      });
+
+        await this.loadEmployees(employeeCount);
+      }
+    };
+
+    this.onEmployeeAdded = payroll.EmployeeAdded(refresh);
+    this.onSalaryUpdated = payroll.SalaryUpdated(refresh);
+    this.onPaymentAddressUpdated = payroll.PaymentAddressUpdated(refresh);
+    this.onEmployeeRemoved = payroll.EmployeeRemoved(refresh);
+
+    await refresh(null);
+  }
+
+  componentWillUnmount() {
+    this.onEmployeeAdded.stopWatching();
+    this.onSalaryUpdated.stopWatching();
+    this.onPaymentAddressUpdated.stopWatching();
+    this.onEmployeeRemoved.stopWatching();
   }
 
   loadEmployees(employeeCount) {

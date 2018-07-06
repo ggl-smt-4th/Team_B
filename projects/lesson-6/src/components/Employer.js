@@ -1,4 +1,4 @@
-import React, { Component } from 'react'
+import React, { Component } from 'react';
 import { Layout, Menu, Alert } from 'antd';
 
 import Fund from './Fund';
@@ -17,20 +17,22 @@ class Employer extends Component {
 
   componentDidMount() {
     const { account, payroll } = this.props;
-    payroll.owner.call({
-      from: account
-    }).then((result) => {
-      this.setState({
-        owner: result
+    payroll.owner
+      .call({
+        from: account
+      })
+      .then(result => {
+        this.setState({
+          owner: result
+        });
       });
-    })
   }
 
-  onSelectTab = ({key}) => {
+  onSelectTab = ({ key }) => {
     this.setState({
       mode: key
     });
-  }
+  };
 
   renderContent = () => {
     const { account, payroll, web3 } = this.props;
@@ -40,18 +42,18 @@ class Employer extends Component {
       return <Alert message="你没有权限" type="error" showIcon />;
     }
 
-    switch(mode) {
+    switch (mode) {
       case 'fund':
-        return <Fund account={account} payroll={payroll} web3={web3} />
+        return <Fund account={account} payroll={payroll} web3={web3} />;
       case 'employees':
       default:
-        return <EmployeeList account={account} payroll={payroll} web3={web3} />
+        return <EmployeeList account={account} payroll={payroll} web3={web3} />;
     }
-  }
+  };
 
   render() {
     return (
-      <Layout style={{ padding: '24px 0', background: '#fff'}}>
+      <Layout style={{ padding: '24px 0', background: '#fff' }}>
         <Sider width={200} style={{ background: '#fff' }}>
           <Menu
             mode="inline"
@@ -71,4 +73,4 @@ class Employer extends Component {
   }
 }
 
-export default Employer
+export default Employer;

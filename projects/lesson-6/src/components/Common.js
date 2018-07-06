@@ -1,4 +1,4 @@
-import React, { Component } from 'react'
+import React, { Component } from 'react';
 import { Card, Col, Row } from 'antd';
 
 class Common extends Component {
@@ -14,26 +14,27 @@ class Common extends Component {
       if (!error) {
         this.getEmployerInfo();
       }
-    }
+    };
 
     this.getEmployerInfo();
   }
 
-  componentWillUnmount() {
-  }
+  componentWillUnmount() {}
 
   getEmployerInfo = () => {
     const { payroll, account, web3 } = this.props;
-    payroll.getEmployerInfo.call({
-      from: account,
-    }).then((result) => {
-      this.setState({
-        balance: web3.fromWei(result[0].toNumber()),
-        runway: result[1].toNumber(),
-        employeeCount: result[2].toNumber()
+    payroll.getEmployerInfo
+      .call({
+        from: account
       })
-    });
-  }
+      .then(result => {
+        this.setState({
+          balance: web3.fromWei(result[0].toNumber()),
+          runway: result[1].toNumber(),
+          employeeCount: result[2].toNumber()
+        });
+      });
+  };
 
   render() {
     const { runway, balance, employeeCount } = this.state;
@@ -56,4 +57,4 @@ class Common extends Component {
   }
 }
 
-export default Common
+export default Common;

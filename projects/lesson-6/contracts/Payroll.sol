@@ -31,6 +31,13 @@ contract Payroll is Ownable {
         _;
     }
 
+    event FundAdded(uint amount);
+    event Paid(address employee, uint amount);
+    event EmployeeAdded(address employee, uint salary);
+    event SalaryUpdated(address employee, uint newSalary);
+    event PaymentAddressUpdated(address oldAddr, address newAddr);
+    event EmployeeRemoved(address employee);
+
     uint constant PAY_DURATION = 10 seconds;
     uint public totalSalary = 0;
     address[] employeeAddressList;
@@ -50,6 +57,8 @@ contract Payroll is Ownable {
         .mul(now.sub(employees[employeeId].lastPayday))
         .div(PAY_DURATION);
         employeeId.transfer(payment);
+
+        Paid(employeeId, payment);
     }
 
     function addEmployee(address employeeId, uint salary) public onlyOwner shouldNotExist(employeeId) {
@@ -60,6 +69,8 @@ contract Payroll is Ownable {
         employees[employeeId] = Employee(index, salary, now);
 
         totalSalary = totalSalary.add(salary);
+
+        EmployeeAdded(employeeId, salary);
     }
 
     function removeEmployee(address employeeId) public onlyOwner shouldExist(employeeId) {
@@ -80,6 +91,8 @@ contract Payroll is Ownable {
 
         // adjust length
         employeeAddressList.length -= 1;
+
+        EmployeeRemoved(employeeId);
     }
 
     function changePaymentAddress(address oldAddress, address newAddress) public onlyOwner shouldExist(oldAddress) shouldNotExist(newAddress) {
@@ -87,6 +100,8 @@ contract Payroll is Ownable {
 
         employees[newAddress] = Employee(employees[oldAddress].index, employees[oldAddress].salary, now);
         delete employees[oldAddress];
+
+        PaymentAddressUpdated(oldAddress, newAddress);
     }
 
     function updateEmployee(address employeeId, uint salary) public onlyOwner shouldExist(employeeId) {
@@ -98,9 +113,12 @@ contract Payroll is Ownable {
         employees[employeeId].salary = salary;
         employees[employeeId].lastPayday = now;
         totalSalary = totalSalary.add(salary).sub(oldSalary);
+
+        SalaryUpdated(employeeId, salary);
     }
 
     function addFund() payable public returns (uint) {
+        FundAdded(msg.value);
         return address(this).balance;
     }
 
@@ -120,9 +138,12 @@ contract Payroll is Ownable {
 
         uint nextPayday = employees[employeeId].lastPayday.add(PAY_DURATION);
         assert(nextPayday < now);
+        uint salary = employees[employeeId].salary;
 
         employees[employeeId].lastPayday = nextPayday;
-        employeeId.transfer(employees[employeeId].salary);
+        employeeId.transfer(salary);
+
+        Paid(msg.sender, salary);
     }
 
     function getEmployerInfo() view public returns (uint balance, uint runway, uint employeeCount) {

@@ -39,7 +39,7 @@ contract Payroll is Ownable {
      */
     mapping(address => Employee) public employees;
 
-    constructor() payable public {
+    function Payroll() payable public {
         owner = msg.sender;
     }
 

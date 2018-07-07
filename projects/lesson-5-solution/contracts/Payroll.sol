@@ -5,12 +5,6 @@ import './Ownable.sol';
 
 contract Payroll is Ownable {
 
-    event AddFund(address indexed from, uint value);
-    event GetPaid(address indexed employee, uint value);
-    event AddEmployee(address indexed from, address indexed employee, uint salary);
-    event UpdateEmployee(address indexed from, address indexed employee, uint salary);
-    event RemoveEmployee(address indexed from, address indexed removed);
-
     using SafeMath for uint;
 
     /**
@@ -39,6 +33,7 @@ contract Payroll is Ownable {
 
     uint constant PAY_DURATION = 10 seconds;
     uint public totalSalary = 0;
+    uint public totalEmployee = 0;
     address[] employeeAddressList;
 
     /**
@@ -46,6 +41,22 @@ contract Payroll is Ownable {
      * instead of updating a copy so that we could save some gas.
      */
     mapping(address => Employee) public employees;
+
+    event NewEmployee(
+        address employee
+    );
+    event UpdateEmployee(
+        address employee
+    );
+    event RemoveEmployee(
+        address employee
+    );
+    event NewFund(
+        uint balance
+    );
+    event GetPaid(
+        address employee
+    );
 
     function Payroll() payable public Ownable {
         owner = msg.sender;
@@ -66,7 +77,8 @@ contract Payroll is Ownable {
         employees[employeeId] = Employee(index, salary, now);
 
         totalSalary = totalSalary.add(salary);
-        AddEmployee(msg.sender, employeeId, salary);
+        totalEmployee = totalEmployee.add(1);
+        NewEmployee(employeeId);
     }
 
     function removeEmployee(address employeeId) public onlyOwner shouldExist(employeeId) {
@@ -86,8 +98,9 @@ contract Payroll is Ownable {
         employees[moveAddress].index = index;
 
         // adjust length
-        employeeAddressList.length -= 1;
-        RemoveEmployee(msg.sender, employeeId);
+        employeeAddressList.length = employeeAddressList.length.sub(1);
+        totalEmployee = totalEmployee.sub(1);
+        RemoveEmployee(employeeId);
     }
 
     function changePaymentAddress(address oldAddress, address newAddress) public onlyOwner shouldExist(oldAddress) shouldNotExist(newAddress) {
@@ -106,12 +119,11 @@ contract Payroll is Ownable {
         employees[employeeId].salary = salary;
         employees[employeeId].lastPayday = now;
         totalSalary = totalSalary.add(salary).sub(oldSalary);
-
-        UpdateEmployee(msg.sender, employeeId, salary);
+        UpdateEmployee(employeeId);
     }
 
     function addFund() payable public returns (uint) {
-        AddFund(msg.sender, msg.value);
+        NewFund(this.balance);
         return address(this).balance;
     }
 
@@ -134,7 +146,7 @@ contract Payroll is Ownable {
 
         employees[employeeId].lastPayday = nextPayday;
         employeeId.transfer(employees[employeeId].salary);
-        GetPaid(msg.sender, employees[employeeId].salary);
+        GetPaid(employeeId);
     }
 
     function getEmployerInfo() view public returns (uint balance, uint runway, uint employeeCount) {

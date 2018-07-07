@@ -50,7 +50,28 @@ class EmployeeList extends Component {
     }
 
     componentDidMount() {
-        const { payroll, account } = this.props;
+      const { payroll } = this.props;
+      this.reloadEmployees();
+
+      const updateEmployees = (error, result) => {
+        if(!error) {
+          this.reloadEmployees();
+        }
+      };
+
+      this.onEmployeeAdded = payroll.EmployeeAdded(updateEmployees);
+      this.onEmployeeUpdated = payroll.EmployeeUpdated(updateEmployees);
+      this.onEmployeeDeleted = payroll.EmployeeDeleted(updateEmployees);
+    }
+
+    componentWillUnmount() {
+      this.onEmployeeAdded.stopWatching();
+      this.onEmployeeUpdated.stopWatching();
+      this.onEmployeeDeleted.stopWatching();
+    }
+
+    reloadEmployees() {
+      const { payroll, account } = this.props;
         payroll.getEmployerInfo.call({
             from: account
         }).then((result) => {

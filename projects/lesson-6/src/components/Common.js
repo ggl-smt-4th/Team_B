@@ -8,20 +8,40 @@ class Common extends Component {
     this.state = {};
   }
 
+  //组件加载完以后添加智能合约中的事件监听
   componentDidMount() {
-    const { payroll } = this.props;
+    const { payroll, web3 } = this.props;
+
     const updateInfo = (error, result) => {
       if (!error) {
+        console.log('result: ');
+        console.log(result);
         this.getEmployerInfo();
+      }else {
+        console.log(error);
       }
     }
+
+    //开启事件监听，通过回调函数获取事件监听返回的信息
+    this.addFund = payroll.AddFund(updateInfo);
+    this.getPaid = payroll.GetPaid(updateInfo);
+    this.addEmployee = payroll.AddEmployee(updateInfo);
+    this.updateEmployee = payroll.UpdateEmployee(updateInfo);
+    this.removeEmployee = payroll.RemoveEmployee(updateInfo);
 
     this.getEmployerInfo();
   }
 
+  //组件卸载之前停止事件监听
   componentWillUnmount() {
+    this.addFund.stopWatching();
+    this.getPaid.stopWatching();
+    this.addEmployee.stopWatching();
+    this.updateEmployee.stopWatching();
+    this.removeEmployee.stopWatching();
   }
 
+  //获取雇主的信息
   getEmployerInfo = () => {
     const { payroll, account, web3 } = this.props;
     payroll.getEmployerInfo.call({

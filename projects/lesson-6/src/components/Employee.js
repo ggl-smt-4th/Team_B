@@ -1,11 +1,11 @@
-import React, {Component} from 'react'
-import {Card, Col, Row, Layout, Alert, message, Button} from 'antd';
+import React, { Component } from 'react'
+import { Card, Col, Row, Layout, Alert, message, Button } from 'antd';
 
 import Common from './Common';
 
 class Employer extends Component {
     checkEmployee = () => {
-        const {payroll, account, web3} = this.props;
+        const { payroll, account, web3 } = this.props;
         payroll.getEmployeeInfoById.call(account, {
             from: account
         }).then((ret) => {
@@ -22,7 +22,7 @@ class Employer extends Component {
     }
 
     getPaid = () => {
-        const {payroll, account} = this.props;
+        const { payroll, account } = this.props;
         payroll.getPaid({
             from: account,
         }).then((ret) => {
@@ -42,14 +42,33 @@ class Employer extends Component {
     }
 
     componentDidMount() {
+        const { payroll } = this.props;
+
+        const updateInfo = (error, result) => {
+            if (!error) {
+                console.log('result: ');
+                console.log(result);
+                this.checkEmployee();
+            } else {
+                console.log(error);
+            }
+        }
+
+        //开启事件监听，通过回调函数获取事件监听返回的信息
+        this.getPaidEvent = payroll.GetPaid(updateInfo);
+
         this.checkEmployee();
     }
 
+    componentWillUnmount() {
+        this.getPaidEvent.stopWatching();
+    }
+
     renderContent() {
-        const {salary, lastPaidDate, balance} = this.state;
+        const { salary, lastPaidDate, balance } = this.state;
 
         if (!salary || salary === '0') {
-            return <Alert message="你不是员工" type="error" showIcon/>;
+            return <Alert message="你不是员工" type="error" showIcon />;
         }
 
         return (
@@ -78,11 +97,11 @@ class Employer extends Component {
     }
 
     render() {
-        const {account, payroll, web3} = this.props;
+        const { account, payroll, web3 } = this.props;
 
         return (
-            <Layout style={{padding: '0 24px', background: '#fff'}}>
-                <Common account={account} payroll={payroll} web3={web3}/>
+            <Layout style={{ padding: '0 24px', background: '#fff' }}>
+                <Common account={account} payroll={payroll} web3={web3} />
                 <h2>个人信息</h2>
                 {this.renderContent()}
             </Layout>
